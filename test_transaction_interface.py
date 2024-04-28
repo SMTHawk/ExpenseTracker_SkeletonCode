@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 from transaction import TransactionInterface
+import sqlite3
 
 class TestTransactionInterface(unittest.TestCase):
     def setUp(self):
