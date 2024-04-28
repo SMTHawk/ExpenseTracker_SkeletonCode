@@ -86,14 +86,6 @@ class UserInterface:
         else:
             print("Invalid username or password.")
 
-    def check_credentials(self, username, password):
-        # Check credentials against the database
-        data = self.db.fetch_data(f"SELECT * FROM users WHERE username='{username}' AND password='{password}'")
-        if data:
-            print("Login successful.")
-        else:
-            print("Invalid username or password.")
-
     def update_profile(self):
         pass
 
