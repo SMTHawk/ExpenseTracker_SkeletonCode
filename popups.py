@@ -36,13 +36,13 @@ class RegisterPopup(PopupWindow):
         self.destroy()
 
 class LoginPopup(PopupWindow):
-    def __init__(self, parent):
+    def __init__(self, parent, callback):
         super().__init__(parent)
         self.title("Login User")
         self.db = Database("users.db")
-        self.create_widgets()
+        self.create_widgets(callback)
 
-    def create_widgets(self):
+    def create_widgets(self, callback):
         self.username_label = tk.Label(self, text="Username:")
         self.username_label.pack()
         self.username_entry = tk.Entry(self)
@@ -53,17 +53,8 @@ class LoginPopup(PopupWindow):
         self.password_entry = tk.Entry(self, show="*")
         self.password_entry.pack()
 
-        self.login_button = tk.Button(self, text="Login", command=self.login_user)
+        self.login_button = tk.Button(self, text="Login", command=lambda: callback(self.username_entry.get(), self.password_entry.get()))
         self.login_button.pack()
-
-    def login_user(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        data = self.db.fetch_data(f"SELECT * FROM users WHERE username='{username}' AND password='{password}'")
-        if data:
-            print("Login successful.")
-        else:
-            print("Invalid username or password.")
 
 class ChangePasswordPopup(PopupWindow):
     def __init__(self, parent):

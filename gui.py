@@ -29,7 +29,7 @@ class GUI(tk.Tk):
         self.user_interface.register_user()
 
     def open_login_popup(self):
-        self.user_interface.login_user()
+        login_popup = LoginPopup(self, self.user_interface.login_user)
 
     def open_change_password_popup(self):
         self.user_interface.change_password()

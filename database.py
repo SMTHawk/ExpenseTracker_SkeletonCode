@@ -22,7 +22,8 @@ class Database:
         try:
             self.cursor.execute(query)
             data = self.cursor.fetchall()
-            print("Data fetched successfully.")
+            print("Data fetched successfully:", data)
+            return data
         except sqlite3.Error as e:
             print(f"Error fetcing data: {e}")
             return None
