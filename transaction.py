@@ -1,10 +1,16 @@
 class TransactionInterface:
-    def __init__(self, master):
+    def __init__(self, master, db):
         self.master = master
-        #Initialize transaction GUI components
+        self.db = db
 
-    def add_transaction(self):
-        pass
+    def add_transaction(self, user_id, amount, category, date):
+        """Add a new transaction to the database."""
+        query = "INSERT INTO transactions (user_id, amount, category, date) VALUES (?, ?, ?, ?)"
+        try:
+            self.db.execute_query(query, (user_id, amount, category, date))
+            return "Transaction added successfully"
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     def delete_transaction(self):
         pass
