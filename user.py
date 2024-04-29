@@ -77,14 +77,25 @@ class UserInterface:
         register_popup = RegisterPopup(self.master)
 
     def login_user(self, username, password):
+        # Ensure case insensitivity and remove whitespace
+        username = username.strip().lower()
+        password = password.strip()
+
         # Check credentials against the database
-        query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
-        print("Executing query:", query)  
+        query = f"SELECT * FROM users WHERE LOWER(username)='{username}' AND password='{password}'"
+        print("Executing query:", query)
         data = self.db.fetch_data(query)
+        print("Fetched data:", data) 
         if data:
             print("Login successful.")
         else:
             print("Invalid username or password.")
+            self.log_failed_login(username)
+    
+    def log_failed_login(self, username):
+        #Log failed attempt
+        with open("failed_logins.txt", "a") as file:
+            file.write(f"Failed login attempt for username: {username}\n")
 
     def update_profile(self):
         pass
