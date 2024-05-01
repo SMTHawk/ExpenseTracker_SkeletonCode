@@ -1,38 +1,76 @@
 import tkinter as tk
-from user import UserInterface
 from popups import RegisterPopup, LoginPopup, ChangePasswordPopup
+from transaction import TransactionInterface
+from category import CategoryInterface
+from reminder import ReminderInterface
+from database import Database
+from user import UserInterface
 
 class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("User")
-        self.geometry("300x200")
-    
-        self.create_widgets()
-    
-    def create_widgets(self):
+        self.title("Expense Tracker")
+        self.geometry("500x400")
+        
+        self.db = Database("users.db")
         self.user_interface = UserInterface(self)
+        self.transaction_interface = TransactionInterface(self, self.db)
+        self.category_interface = CategoryInterface(self)
+        self.reminder_interface = ReminderInterface(self)
         
-        #Register
-        register_btn = tk.Button(self, text="Register User", command=self.open_register_popup)
-        register_btn.pack(pady=10)
-        
-        #Login
+        self.initial_buttons = []
+        self.create_initial_buttons()
+        self.reminder_interface.notify_user()
+
+    def create_initial_buttons(self):
         login_btn = tk.Button(self, text="User Login", command=self.open_login_popup)
-        login_btn.pack(pady=10)
+        login_btn.pack(pady=20)
+        self.initial_buttons.append(login_btn)
         
-        #Change pass
-        change_pass_btn = tk.Button(self, text="Change Password", command=self.open_change_password_popup)
-        change_pass_btn.pack(pady=10)
+        register_btn = tk.Button(self, text="Register User", command=self.open_register_popup)
+        register_btn.pack(pady=20)
+        self.initial_buttons.append(register_btn)
+
+    def create_widgets(self):
+        for button in self.initial_buttons:
+            button.pack_forget()  # Hide initial buttons
+        # Add transaction management buttons, etc.
+        self.add_trans_btn = tk.Button(self, text="Add Transaction", command=lambda: self.transaction_interface.add_transaction(1, 100, 'Groceries', '2023-12-01'))
+        self.add_trans_btn.pack(pady=5)
+
+        self.add_cat_btn = tk.Button(self, text="Add Category", command=lambda: self.category_interface.add_category('Groceries'))
+        self.add_cat_btn.pack(pady=5)
+
+        self.add_reminder_btn = tk.Button(self, text="Add Reminder", command=lambda: self.reminder_interface.add_reminder("Meeting at 3 PM", "15:00"))
+        self.add_reminder_btn.pack(pady=5)
+
+        self.list_reminders_btn = tk.Button(self, text="List Reminders", command=self.show_reminders)
+        self.list_reminders_btn.pack(pady=5)
         
+
     def open_register_popup(self):
-        self.user_interface.register_user()
+        register_popup = RegisterPopup(self)
+        register_popup.grab_set()
 
     def open_login_popup(self):
-        login_popup = LoginPopup(self, self.user_interface.login_user)
+        login_popup = LoginPopup(self, self.login_user)  # Pass the login_user method
+        login_popup.grab_set()
 
-    def open_change_password_popup(self):
-        self.user_interface.change_password()
+    def login_user(self, username, password):
+        if self.user_interface.login_user(username, password):
+            print("Login successful, loading features...")
+            self.create_widgets()  # Load other UI components
+            return True
+        else:
+            print("Login failed. Please try again.")
+            return False
+
+    def show_reminders(self):
+        reminders_window = tk.Toplevel(self)
+        reminders_window.title("All Reminders")
+        reminders_window.geometry("300x200")
+        reminder_texts = "\n".join([f"{rem['time']} - {rem['message']}" for rem in self.reminder_interface.list_reminders()])
+        tk.Label(reminders_window, text=reminder_texts, justify=tk.LEFT, font=('Helvetica', 12)).pack(padx=10, pady=10)
 
 if __name__ == "__main__":
     app = GUI()
