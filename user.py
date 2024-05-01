@@ -1,104 +1,50 @@
 import sqlite3
-from database import Database
-from popups import RegisterPopup, LoginPopup, ChangePasswordPopup
-
-# Define schema
-create_users_table = """
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
-)
-"""
-
-def create_database(db_name):
-    try:
-        # Create file
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-        
-        # Execute SQL
-        cursor.execute(create_users_table)
-        
-        # Commit changes and close
-        conn.commit()
-        conn.close()
-        print(f"Database '{db_name}' created successfully with users table.")
-    except sqlite3.Error as e:
-        print(f"Error creating database: {e}")
-
-if __name__ == "__main__":
-    # Name of database
-    db_name = "users.db"
-    
-    # Create the SQL database
-    create_database(db_name)
-
-class Database:
-    def __init__(self, db_name):
-        # Initialize database connection
-        self.db_name = db_name
-        self.connection = sqlite3.connect(self.db_name)
-        self.cursor = self.connection.cursor()
-        print("Database connection established.")
-
-    def execute_query(self, query):
-        # Execute SQL query
-        try:
-            self.cursor.execute(query)
-            self.connection.commit()
-            print("Query executed successfully.")
-        except sqlite3.Error as e:
-            print(f"Error executing query: {e}")
-
-    def fetch_data(self, query):
-        # Fetch data from the database
-        try:
-            self.cursor.execute(query)
-            data = self.cursor.fetchall()
-            print("Data fetched successfully.")
-            return data
-        except sqlite3.Error as e:
-            print(f"Error fetching data: {e}")
-            return None
-
-    def close_connection(self):
-        # Close database connection
-        self.cursor.close()
-        self.connection.close()
-        print("Database connection closed.")
 
 class UserInterface:
     def __init__(self, master):
         self.master = master
-        self.db = Database("users.db")
-        
-    def register_user(self):
-        register_popup = RegisterPopup(self.master)
+        self.db = self.master.db  # Assuming the master has a db attribute
 
     def login_user(self, username, password):
-        # Ensure case insensitivity and remove whitespace
-        username = username.strip().lower()
-        password = password.strip()
+        # Login verification logic
+        query = "SELECT * FROM users WHERE username=? AND password=?"
+        try:
+            user = self.db.fetch_data(query, (username, password))
+            if user:
+                print("Login successful.")
+                return True
+            else:
+                print("Invalid username or password.")
+                return False
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            return False
 
-        # Check credentials against the database
-        query = f"SELECT * FROM users WHERE LOWER(username)='{username}' AND password='{password}'"
-        print("Executing query:", query)
-        data = self.db.fetch_data(query)
-        print("Fetched data:", data) 
-        if data:
-            print("Login successful.")
+    def register_user(self, username, password):
+        # Registration logic
+        try:
+            query = "INSERT INTO users (username, password) VALUES (?, ?)"
+            self.db.execute_query(query, (username, password))
+            print("User registered successfully.")
+            return True
+        except sqlite3.IntegrityError:
+            print("Username already exists.")
+            return False
+        except Exception as e:
+            print(f"Error registering user: {e}")
+            return False
+
+    def change_password(self, username, old_password, new_password):
+        # Change password logic
+        if self.login_user(username, old_password):  # First verify the old password
+            try:
+                query = "UPDATE users SET password=? WHERE username=?"
+                self.db.execute_query(query, (new_password, username))
+                print("Password changed successfully.")
+                return True
+            except Exception as e:
+                print(f"Error changing password: {e}")
+                return False
         else:
-            print("Invalid username or password.")
-            self.log_failed_login(username)
-    
-    def log_failed_login(self, username):
-        #Log failed attempt
-        with open("failed_logins.txt", "a") as file:
-            file.write(f"Failed login attempt for username: {username}\n")
-
-    def update_profile(self):
-        pass
-
-    def change_password(self):
-        change_pass_popup = ChangePasswordPopup(self.master)
+            print("Old password does not match.")
+            return False
