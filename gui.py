@@ -1,5 +1,5 @@
 import tkinter as tk
-from popups import RegisterPopup, LoginPopup, ChangePasswordPopup
+from popups import RegisterPopup, LoginPopup, AddTransactionWindow, ChangePasswordPopup
 from transaction import TransactionInterface
 from category import CategoryInterface
 from reminder import ReminderInterface
@@ -14,7 +14,8 @@ class GUI(tk.Tk):
         
         self.db = Database("users.db")
         self.user_interface = UserInterface(self)
-        self.transaction_interface = TransactionInterface(self, self.db)
+        self.categories = []
+        self.transaction_interface = TransactionInterface(self, self.db, self.categories)
         self.category_interface = CategoryInterface(self)
         self.reminder_interface = ReminderInterface(self)
         
@@ -35,11 +36,11 @@ class GUI(tk.Tk):
         for button in self.initial_buttons:
             button.pack_forget()  # Hide initial buttons
         # Add transaction management buttons, etc.
-        self.add_trans_btn = tk.Button(self, text="Add Transaction", command=lambda: self.transaction_interface.add_transaction(1, 100, 'Groceries', '2023-12-01'))
+        self.add_trans_btn = tk.Button(self, text="Add Transaction", command=self.transaction_interface.add_transaction_window)
         self.add_trans_btn.pack(pady=5)
 
-        self.add_cat_btn = tk.Button(self, text="Add Category", command=lambda: self.category_interface.add_category('Groceries'))
-        self.add_cat_btn.pack(pady=5)
+        view_transactions_btn = tk.Button(self, text="View Transactions", command=self.transaction_interface.view_transactions)
+        view_transactions_btn.pack(pady=5)
 
         self.add_reminder_btn = tk.Button(self, text="Add Reminder", command=lambda: self.reminder_interface.add_reminder("Meeting at 3 PM", "15:00"))
         self.add_reminder_btn.pack(pady=5)
@@ -47,7 +48,6 @@ class GUI(tk.Tk):
         self.list_reminders_btn = tk.Button(self, text="List Reminders", command=self.show_reminders)
         self.list_reminders_btn.pack(pady=5)
         
-
     def open_register_popup(self):
         register_popup = RegisterPopup(self)
         register_popup.grab_set()

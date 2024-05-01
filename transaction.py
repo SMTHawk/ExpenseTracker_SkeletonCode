@@ -1,7 +1,11 @@
+from popups import AddTransactionWindow
+import tkinter as tk
+
 class TransactionInterface:
-    def __init__(self, master, db):
+    def __init__(self, master, db, categories):
         self.master = master
         self.db = db
+        self.categories = categories
 
     def add_transaction(self, user_id, amount, category, date):
         """Add a new transaction to the database."""
@@ -11,6 +15,10 @@ class TransactionInterface:
             return "Transaction added successfully"
         except Exception as e:
             return f"Error: {str(e)}"
+        
+    def add_transaction_window(self):
+        add_transaction_window = AddTransactionWindow(self.master, self.categories, self.db)
+        add_transaction_window.grab_set()
 
     def delete_transaction(self, transaction_id):
         """Delete a transaction from the database."""
@@ -46,7 +54,7 @@ class TransactionInterface:
             return f"Error: {str(e)}"
 
     def list_transactions(self, user_id=None):
-        """List all transactions from the database, optionally filtered by user ID."""
+        """List all transactions from the database, filtered by user ID."""
         query = "SELECT * FROM transactions"
         params = ()
 
@@ -58,3 +66,19 @@ class TransactionInterface:
             return self.db.fetch_data(query, params)
         except Exception as e:
             return f"Error: {str(e)}"
+
+    def view_transactions(self):
+        transactions_window = tk.Toplevel(self.master)
+        transactions_window.title("View Transactions")
+        
+        #fetch and display transactions
+        transactions = self.list_transactions()
+        if transactions:
+            #display transactions
+            text_widget = tk.Text(transactions_window, height=10, width=50)
+            text_widget.pack(expand=True, fill="both")
+
+            for transaction in transactions:
+                text_widget.insert(tk.END, f"ID: {transaction[0]}, Amount: {transaction[2]}, Category: {transaction[3]}, Date: {transaction[4]}\n")
+        else:
+            tk.Label(transactions_window, text="No transactions found").pack(padx=10, pady=10)
