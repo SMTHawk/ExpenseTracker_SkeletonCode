@@ -2,14 +2,13 @@ import sqlite3
 
 class Database:
     def __init__(self, db_name):
-        #Initialize connection
         self.db_name = db_name
         self.connection = sqlite3.connect(self.db_name)
         self.cursor = self.connection.cursor()
         print("Database connection established.")
+        self.setup_database()
 
     def execute_query(self, query, params=None):
-        #Execute query
         try:
             self.cursor.execute(query, params if params else ())
             self.connection.commit()
@@ -18,7 +17,6 @@ class Database:
             print(f"Error executing query: {e}")
 
     def fetch_data(self, query, params=None):
-        #Fetch data
         try:
             self.cursor.execute(query, params if params else ())
             data = self.cursor.fetchall()
@@ -29,7 +27,34 @@ class Database:
             return None
 
     def close_connection(self):
-        #Close connection
         self.cursor.close()
         self.connection.close()
         print("Database connection closed.")
+
+    def setup_database(self):
+        """Create tables if they don't exist."""
+        create_users_table = """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        );
+        """
+        create_transactions_table = """
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER,
+            amount REAL,
+            category TEXT,
+            date TEXT
+        );
+        """
+        create_categories_table = """
+        CREATE TABLE IF NOT EXISTS categories (
+            id INTEGER PRIMARY KEY,
+            name TEXT UNIQUE
+        );
+        """
+        self.execute_query(create_users_table)
+        self.execute_query(create_transactions_table)
+        self.execute_query(create_categories_table)
