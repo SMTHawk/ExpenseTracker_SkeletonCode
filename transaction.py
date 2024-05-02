@@ -17,7 +17,7 @@ class TransactionInterface:
             return f"Error: {str(e)}"
         
     def add_transaction_window(self):
-        add_transaction_window = AddTransactionWindow(self.master, self.categories, self.db)
+        add_transaction_window = AddTransactionWindow(self.master, self.db)
         add_transaction_window.grab_set()
 
     def delete_transaction(self, transaction_id):
