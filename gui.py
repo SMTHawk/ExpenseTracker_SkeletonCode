@@ -1,7 +1,6 @@
 import tkinter as tk
 from popups import RegisterPopup, LoginPopup, AddTransactionWindow, ChangePasswordPopup
 from transaction import TransactionInterface
-from category import CategoryInterface
 from reminder import ReminderInterface
 from database import Database
 from user import UserInterface
@@ -16,7 +15,6 @@ class GUI(tk.Tk):
         self.user_interface = UserInterface(self)
         self.categories = []
         self.transaction_interface = TransactionInterface(self, self.db, self.categories)
-        self.category_interface = CategoryInterface(self)
         self.reminder_interface = ReminderInterface(self)
         
         self.initial_buttons = []
