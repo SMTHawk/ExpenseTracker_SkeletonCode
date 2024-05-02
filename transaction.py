@@ -7,11 +7,11 @@ class TransactionInterface:
         self.db = db
         self.categories = categories
 
-    def add_transaction(self, user_id, amount, category, date):
+    def add_transaction(self, user_id, amount, category, type, date):
         """Add a new transaction to the database."""
-        query = "INSERT INTO transactions (user_id, amount, category, date) VALUES (?, ?, ?, ?)"
+        query = "INSERT INTO transactions (user_id, amount, category, type, date) VALUES (?, ?, ?, ?, ?)"
         try:
-            self.db.execute_query(query, (user_id, amount, category, date))
+            self.db.execute_query(query, (user_id, amount, category, type, date))
             return "Transaction added successfully"
         except Exception as e:
             return f"Error: {str(e)}"
