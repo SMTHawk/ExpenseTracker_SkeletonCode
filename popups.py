@@ -86,44 +86,53 @@ class ChangePasswordPopup(PopupWindow):
         # Widgets for changing password
         pass  # Implement similar to other popups
 
-"""Transaction window"""
 class AddTransactionWindow(tk.Toplevel):
-    def __init__(self, master, categories, db):
-        super().__init__(master)
-        self.title("Add Transaction")
-        self.geometry("450x400")
-
-        self.category_options = categories
+    def __init__(self, parent, db):
+        super().__init__(parent)
         self.db = db
+        self.parent = parent
+        self.title("Add Transaction")
+        self.geometry("400x500")
+        self.create_widgets()
 
+    def create_widgets(self):
+        # Predefined categories
+        categories = ["Savings", "Food", "Bills", "Transportation", "Entertainment", "Extra Expenses"]
+
+        # Transaction type
         tk.Label(self, text="Transaction Type:").pack()
-        self.transaction_type = ttk.Combobox(self, values=["Income", "Expense"])
+        self.transaction_type = ttk.Combobox(self, values=["Expense", "Income"])
         self.transaction_type.pack()
 
+        # Amount Entry
         tk.Label(self, text="Amount:").pack()
         self.amount_entry = tk.Entry(self)
         self.amount_entry.pack()
 
+        # Category Dropdown
         tk.Label(self, text="Category:").pack()
-        self.category = ttk.Combobox(self, values=self.category_options)
+        self.category = ttk.Combobox(self, values=categories)
         self.category.pack()
 
+        # Note Entry
         tk.Label(self, text="Note:").pack()
         self.note = tk.Entry(self)
         self.note.pack()
 
+        # Date Picker
         tk.Label(self, text="Date:").pack()
-        self.date_picker = Calendar(self)  #Calendar widget
+        self.date_picker = Calendar(self)  # Calendar widget
         self.date_picker.pack()
 
+        # Button Frame
         button_frame = tk.Frame(self)
         button_frame.pack()
 
-        #Save button
+        # Save button
         save_button = tk.Button(button_frame, text="Save", command=self.save_transaction)
         save_button.pack(side=tk.LEFT, padx=10)
 
-        #Cancel button
+        # Cancel button
         cancel_button = tk.Button(button_frame, text="Cancel", command=self.destroy)
         cancel_button.pack(side=tk.LEFT)
 
@@ -132,28 +141,22 @@ class AddTransactionWindow(tk.Toplevel):
         amount = self.amount_entry.get()
         category = self.category.get()
         note = self.note.get()
-        selected_date_str = self.date_picker.get_date()  #Get the selected date as a string
-        
+        selected_date_str = self.date_picker.get_date()
+        print("Selected date string:", selected_date_str)
+
         try:
+        # Attempting to parse the date using the suspected correct format
             selected_date = datetime.strptime(selected_date_str, '%m/%d/%y')
-        except ValueError:
-            print("Error: Invalid date format.")
-            messagebox.showerror("Error", "Invalid date format.")
-            return
-        
-        #Format the date
-        date = selected_date.strftime('%Y-%m-%d')
-        
-        #Ensure that all required fields are filled
-        if transaction_type and amount and category and date:
-            #Save the transaction to the database
-            query = "INSERT INTO transactions (type, amount, category, note, date) VALUES (?, ?, ?, ?, ?)"
-            try:
-                self.db.execute_query(query, (transaction_type, amount, category, note, date))
-                print("Transaction saved successfully.")
+            date = selected_date.strftime('%Y-%m-%d')
+            print("Parsed date:", date)  # To confirm the output
+
+            if self.transaction_type.get() and self.amount_entry.get() and self.category.get() and date:
+                query = "INSERT INTO transactions (type, amount, category, note, date) VALUES (?, ?, ?, ?, ?)"
+                self.db.execute_query(query, (self.transaction_type.get(), self.amount_entry.get(), self.category.get(), self.note.get(), date))
+                messagebox.showinfo("Success", "Transaction saved successfully.")
                 self.destroy()
-            except Exception as e:
-                print("Error saving transaction:", e)
-                messagebox.showerror("Error", "Failed to save transaction.")
-        else:
-            messagebox.showwarning("Incomplete Information", "Please fill in all required fields.")
+            else:
+             messagebox.showwarning("Warning", "All fields are required.")
+        except ValueError as e:
+            messagebox.showerror("Error", f"Invalid date format. Expected 'MM/DD/YY', got '{selected_date_str}'. Error: {str(e)}")
+            print("Date parsing error:", str(e))  # To log the specific error
