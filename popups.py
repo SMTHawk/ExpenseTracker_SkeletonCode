@@ -97,7 +97,7 @@ class AddTransactionWindow(tk.Toplevel):
 
     def create_widgets(self):
         # Predefined categories
-        categories = ["Savings", "Food", "Bills", "Transportation", "Entertainment", "Extra Expenses"]
+        categories = ["Income", "Savings", "Food", "Bills", "Transportation", "Entertainment", "Extra Expenses"]
 
         # Transaction type
         tk.Label(self, text="Transaction Type:").pack()
