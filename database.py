@@ -46,6 +46,8 @@ class Database:
             user_id INTEGER,
             amount REAL,
             category TEXT,
+            type TEXT,
+            note TEXT,
             date TEXT
         );
         """
@@ -58,3 +60,9 @@ class Database:
         self.execute_query(create_users_table)
         self.execute_query(create_transactions_table)
         self.execute_query(create_categories_table)
+        try:
+            self.execute_query("ALTER TABLE transactions ADD COLUMN type TEXT;")
+            self.execute_query("ALTER TABLE transactions ADD COLUMN note TEXT;")
+            print("Column 'type' added to 'transactions' table.")
+        except sqlite3.OperationalError as e:
+            print("Column 'type' already exists in 'transactions' table or other error:", e)
