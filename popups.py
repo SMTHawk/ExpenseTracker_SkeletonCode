@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkcalendar import Calendar
 from datetime import datetime
+import re
 
 class PopupWindow(tk.Toplevel):
     def __init__(self, parent):
@@ -160,3 +161,57 @@ class AddTransactionWindow(tk.Toplevel):
         except ValueError as e:
             messagebox.showerror("Error", f"Invalid date format. Expected 'MM/DD/YY', got '{selected_date_str}'. Error: {str(e)}")
             print("Date parsing error:", str(e))  # To log the specific error
+
+class AddReminderPopup(tk.Toplevel):
+    def __init__(self, parent, reminder_interface):
+        super().__init__(parent)
+        self.title("Add Reminder")
+        self.reminder_interface = reminder_interface
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Note Entry
+        tk.Label(self, text="Note:").pack()
+        self.note_entry = tk.Entry(self)
+        self.note_entry.pack()
+
+        # Time Entry
+        tk.Label(self, text="Time (12 hr format):").pack()
+        self.time_entry = tk.Entry(self)
+        self.time_entry.pack()
+
+        # AM/PM Dropdown
+        tk.Label(self, text="AM/PM:").pack()
+        self.ampm_combobox = ttk.Combobox(self, values=["AM", "PM"])
+        self.ampm_combobox.pack()
+
+        # Calendar
+        tk.Label(self, text="Date:").pack()
+        self.date_picker = Calendar(self)  # Calendar widget
+        self.date_picker.pack()
+
+        # Button Frame
+        button_frame = tk.Frame(self)
+        button_frame.pack()
+
+        # Save button
+        save_button = tk.Button(button_frame, text="Save", command=self.save_reminder)
+        save_button.pack(side=tk.LEFT, padx=10)
+
+        # Cancel button
+        cancel_button = tk.Button(button_frame, text="Cancel", command=self.destroy)
+        cancel_button.pack(side=tk.LEFT)
+
+    def save_reminder(self):
+        note = self.note_entry.get()
+        time_24hr = self.time_entry.get()
+        ampm = self.ampm_combobox.get()
+        date = self.date_picker.get_date()
+        
+        # Ensure that the reminder_interface is initialized correctly
+        if hasattr(self, 'reminder_interface'):
+            self.reminder_interface.add_reminder(note, time_24hr, date)
+            messagebox.showinfo("Success", "Reminder saved successfully.")
+            self.destroy()
+        else:
+            messagebox.showerror("Error", "Reminder interface is not properly initialized.")

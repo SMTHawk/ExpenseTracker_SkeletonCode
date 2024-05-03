@@ -1,16 +1,22 @@
 import tkinter as tk
 from threading import Thread
 import time
+from datetime import datetime
 
 class ReminderInterface:
-    def __init__(self, master):
-        self.master = master
-        self.reminders = []  # Store reminders as a list of dicts
+    def __init__(self, db):
+        self.db = db
+        self.reminders = []
 
-    def add_reminder(self, message, remind_time):
-        """Add a new reminder with a specific message and time."""
-        self.reminders.append({'message': message, 'time': remind_time})
+    def add_reminder(self, message, remind_time, remind_date):
+        """Add a new reminder with a specific message, date, and time."""
+        self.add_reminder_to_db(message, remind_time, remind_date)
         return "Reminder added successfully"
+
+    def add_reminder_to_db(self, message, remind_time, remind_date):
+        """Add a new reminder to the database."""
+        query = "INSERT INTO reminders (note, time, date) VALUES (?, ?, ?)"
+        self.db.execute_query(query, (message, remind_time, remind_date))
 
     def delete_reminder(self, reminder_id):
         """Delete a reminder by its index."""
@@ -32,8 +38,19 @@ class ReminderInterface:
             return "Invalid reminder ID"
 
     def list_reminders(self):
-        """Return a list of all reminders."""
-        return self.reminders
+        """Return a list of all reminders from the database."""
+        query = "SELECT note, time, date FROM reminders"
+        reminders_from_db = self.db.fetch_data(query)
+        reminders_formatted = []
+        if reminders_from_db:
+            for reminder in reminders_from_db:
+                formatted_reminder = {
+                    'note': reminder[0],
+                    'time': reminder[1],
+                    'date': reminder[2]
+                }
+                reminders_formatted.append(formatted_reminder)
+        return reminders_formatted
 
     def notify_user(self):
         """Check reminders continuously and notify the user if it's time."""

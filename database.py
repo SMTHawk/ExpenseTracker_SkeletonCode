@@ -46,7 +46,6 @@ class Database:
             user_id INTEGER,
             amount REAL,
             category TEXT,
-            type TEXT,
             note TEXT,
             date TEXT
         );
@@ -57,12 +56,27 @@ class Database:
             name TEXT UNIQUE
         );
         """
+        
+        create_reminders_table = """
+        CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY,
+            note TEXT,
+            time TEXT,
+            date DATE
+        );
+        """
         self.execute_query(create_users_table)
         self.execute_query(create_transactions_table)
         self.execute_query(create_categories_table)
-        try:
-            self.execute_query("ALTER TABLE transactions ADD COLUMN type TEXT;")
-            self.execute_query("ALTER TABLE transactions ADD COLUMN note TEXT;")
-            print("Column 'type' added to 'transactions' table.")
-        except sqlite3.OperationalError as e:
-            print("Column 'type' already exists in 'transactions' table or other error:", e)
+        self.execute_query(create_reminders_table)
+
+        self.cursor.execute("PRAGMA table_info(transactions)")
+        columns = [col[1] for col in self.cursor.fetchall()]
+        if 'type' not in columns:
+            try:
+                self.execute_query("ALTER TABLE transactions ADD COLUMN type TEXT;")
+                print("Column 'type' added to 'transactions' table.")
+            except sqlite3.OperationalError as e:
+                print("An error occurred while adding 'type' column to 'transactions' table:", e)
+        else:
+            print("Column 'type' already exists in 'transactions' table.")
